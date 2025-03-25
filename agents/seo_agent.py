@@ -60,7 +60,7 @@ class SEOAgent:
             response = self.client.chat.completions.create(
                 model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                 messages=[{"role": "user", "content": keyword_prompt}],
-                max_tokens=1000,
+                max_tokens=500,
                 temperature=0.3
             )
 
@@ -132,7 +132,7 @@ class SEOAgent:
         response = self.client.chat.completions.create(
             model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
             messages=[{"role": "user", "content": seo_prompt}],
-            max_tokens=3000,
+            max_tokens=2000,
             temperature=0.5
         )
 

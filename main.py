@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 from typing import Optional
-
+import asyncio
 
 from agents.research_agent import ResearchAgent
 from agents.planning_agent import PlanningAgent
@@ -14,6 +14,14 @@ app = FastAPI()
 class BlogRequest(BaseModel):
     topic: str
     additional_info: Optional[dict] = None
+
+async def heartbeat(websocket: WebSocket):
+    while True:
+        try:
+            await asyncio.sleep(30)  # Send ping every 30 seconds
+            await websocket.send_json({"type": "ping"})
+        except Exception:
+            break
 
 async def generate_blog_with_updates(websocket: WebSocket, topic: str):
     steps = [
@@ -55,14 +63,15 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
     ]
 
     try:
+        # Start heartbeat
+        heartbeat_task = asyncio.create_task(heartbeat(websocket))
+
         await websocket.send_json({
             **steps[0],
             "progress": 0
         })
         research_agent = ResearchAgent()
         research_output = research_agent.research(topic=topic, year=2025, num_topics=5)
-
-
 
         await websocket.send_json({
             **steps[1],
@@ -71,9 +80,6 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
         planning_agent = PlanningAgent()
         outline = planning_agent.plan(research_output)
 
-        
-
-
         await websocket.send_json({
             **steps[2],
             "progress": 40
@@ -81,8 +87,6 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
         content_agent = ContentAgent()
         content_agent.generate(outline)
         
-
-
         await websocket.send_json({
             **steps[3],
             "progress": 70
@@ -97,7 +101,6 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
         review_agent = ReviewAgent()
         final_content = review_agent.final_review()
 
-        
         await websocket.send_json({
             "step": 6,
             "status": "completed",
@@ -105,12 +108,14 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
             "progress": 100,
             "content": final_content
         })
-        
+
     except Exception as e:
         await websocket.send_json({
             "status": "error",
             "message": str(e)
         })
+    finally:
+        heartbeat_task.cancel()
 
 @app.websocket("/ws/generate-blog")
 async def websocket_endpoint(websocket: WebSocket):
