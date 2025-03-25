@@ -24,6 +24,7 @@ A **FastAPI-based** backend system that generates blog posts using a pipeline of
 ├── .env                    # Environment variables (private)
 ├── .env.example            # Environment variables template
 └── requirements.txt        # Project dependencies
+└── generate_blog.py        #run from terminal to generate blog
 ```
 
 ## Installation & Setup
@@ -63,9 +64,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-```
-
-## Usage
+### Usage
 1. **Give a topic name in the generate_blog.py**
 2. **python generate_blog.py**.
 3. **Blog will be saved in output directory**.
