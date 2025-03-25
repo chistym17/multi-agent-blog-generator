@@ -18,7 +18,7 @@ class BlogRequest(BaseModel):
 async def heartbeat(websocket: WebSocket):
     while True:
         try:
-            await asyncio.sleep(30)  # Send ping every 30 seconds
+            await asyncio.sleep(30)  
             await websocket.send_json({"type": "ping"})
         except Exception:
             break
@@ -63,7 +63,6 @@ async def generate_blog_with_updates(websocket: WebSocket, topic: str):
     ]
 
     try:
-        # Start heartbeat
         heartbeat_task = asyncio.create_task(heartbeat(websocket))
 
         await websocket.send_json({
